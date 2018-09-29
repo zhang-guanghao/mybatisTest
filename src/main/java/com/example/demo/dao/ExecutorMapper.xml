@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.demo.dao.ExecutorDAO" >
+	<select id="insert" parameterType="com.example.demo.executor.ExecuteParam">
+		INSERT INTO ${param.tableName} 
+		<foreach collection="param.row" open="(" close=")" separator="," index="col">
+			${col.name}
+		</foreach>
+		VALUES 
+		<foreach collection="param.row" open="(" close=")" separator="," item="val" index="col">
+			
+ 			<choose>
+				<when test="col.isDate">to_date(#{val},'yyyy-mm-dd hh24:mi:ss')</when>
+				<otherwise>#{val}</otherwise>
+			</choose>
+		</foreach>
+	</select>
+	
+	<select id="update" parameterType="com.example.demo.executor.ExecuteParam">
+		UPDATE ${param.tableName} 
+		<set>
+			<foreach collection="param.row" separator="," item="val" index="col">
+				${col.name}=
+	 			<choose>
+					<when test="col.isDate">to_date(#{val},'yyyy-mm-dd hh24:mi:ss')</when>
+					<otherwise>#{val}</otherwise>
+				</choose>
+			</foreach>
+		</set>
+		<where>
+			<foreach collection="param.where" separator="AND" item="item">
+				${item.column.name}
+				<choose>
+					<when test="item.op == 'between'">BETWEEN to_date(#{item.values[0]},'yyyy-mm-dd hh24:mi:ss') AND to_date(#{item.values[1]},'yyyy-mm-dd hh24:mi:ss'</when>
+					<otherwise>
+						${item.op} 
+						<choose>
+						<when test="item.column.isDate">to_date(#{item.values[0]},'yyyy-mm-dd hh24:mi:ss')</when>
+							<otherwise>#{item.values[0]}</otherwise>
+						</choose>
+					</otherwise>
+				</choose>
+			</foreach>
+		</where>
+	</select>
+
+</mapper>
